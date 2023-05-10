@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Task from '../components/Task';
 import './App.css';
 
@@ -10,14 +10,23 @@ function MyButton({onClick}){
 }
 
 function App() {
+  const inputRef = useRef(null);
   const [tasks, updateTask] = useState([{id:0, title: "Início", status: 0}]);
   const [isDragging, setIsDragging] = useState(false)
 
   const handleDragging = (dragging) => setIsDragging(dragging)
-
+ function openPopup(){
+    document.getElementsByClassName("popup")[0].style.display="flex"
+  }
   function addTask(){
-    var title = prompt("Dê um atítulo")
-    updateTask(arr => [...arr, {id:tasks.length ,title: title, status:0}])
+    var title = inputRef.current.value;
+    inputRef.current.value = "";
+    document.getElementsByClassName("popup")[0].style.display="none"
+    //var title = prompt("Dê um atítulo")
+    console.log(title)
+    if(title!=="" && title!=null){
+      updateTask(arr => [...arr, {id:tasks.length ,title: title, status:0}])
+    }
   }
 
   const handleUpdateList = (id, status) => {
@@ -64,28 +73,44 @@ const handleDropDone = (e) => {
 }
 
   return (
+    
     <div className="App">
-      <button id='botaoAdd' onClick={addTask}>+</button>
-      <div id='content'>
+      <div>
+        <button id='botaoAdd' onClick={openPopup}>+</button>
+        <div id='content'>
+        
+        <div id='todo' onDrop={handleDropTodo} onDragOver={handleDragOver}>
+        <h3>To do</h3>
+        
+          {tasks.filter(e => e.status===0).map(e=><Task task={e} dragStart={handleDragging}></Task>)}
+        </div>
+
+        <div id='doing' onDrop={handleDropDoing} onDragOver={handleDragOver} >
+          <h3>Doing</h3>
       
-      <div id='todo' onDrop={handleDropTodo} onDragOver={handleDragOver}>
-      <h3>To do</h3>
-      
-        {tasks.filter(e => e.status===0).map(e=><Task task={e} dragStart={handleDragging}></Task>)}
+          {tasks.filter(e => e.status===1).map(e=><Task task={e} dragStart={handleDragging}></Task>)}
+        </div>
+
+        <div id='done' onDrop={handleDropDone} onDragOver={handleDragOver}>
+        <h3>Done</h3>
+
+          {tasks.filter(e => e.status===2).map(e=><Task task={e} dragStart={handleDragging}></Task>)}
+        </div>
+        
+        </div>
       </div>
 
-      <div id='doing' onDrop={handleDropDoing} onDragOver={handleDragOver} >
-        <h3>Doing</h3>
-     
-        {tasks.filter(e => e.status===1).map(e=><Task task={e} dragStart={handleDragging}></Task>)}
-      </div>
-
-      <div id='done' onDrop={handleDropDone} onDragOver={handleDragOver}>
-      <h3>Done</h3>
-
-        {tasks.filter(e => e.status===2).map(e=><Task task={e} dragStart={handleDragging}></Task>)}
-      </div>
-      
+      <div className='popup'>
+      <form action='#' onSubmit={addTask}>
+        <div className='dialog'>
+          
+            <h3>Dê um título para sua tarefa</h3>
+            <input on={addTask} ref={inputRef} id='inputTitle' autoFocus></input>
+            <button id='sendButton' onClick={addTask}>Adicionar</button>
+         
+        </div>
+        </form>
+        
       </div>
     </div>
   );
